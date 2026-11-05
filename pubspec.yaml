@@ -1,0 +1,24 @@
+name: jobbot
+description: JobBot AI Android App
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  sqflite: ^2.3.2
+  path: ^1.9.0
+  path_provider: ^2.1.2
+  pdf: ^3.10.8
+  mailer: ^6.0.1
+  file_picker: ^8.0.0
+  shared_preferences: ^2.2.2
+  open_file: ^3.3.2
+  html: ^0.15.4
+
+flutter:
+  uses-material-design: true
