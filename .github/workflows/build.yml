@@ -39,32 +39,34 @@ jobs:
           cp temp_backup/pubspec.yaml .
           rm -rf temp_backup
 
-      # THE FIX: Forces every plugin (including file_picker) to use compileSdkVersion 36
-      - name: Force Android compile SDK to 36 for all plugins
+      # THE ULTIMATE FIX: Intercept the file_picker plugin before evaluation
+      - name: Force SDK 36 on file_picker plugin
         run: |
-          if [ -f android/build.gradle ]; then
-            cat >> android/build.gradle << 'EOF'
+          cat << 'EOF' >> android/build.gradle
 
-          subprojects {
-              afterEvaluate { project ->
-                  if (project.hasProperty('android')) {
-                      android {
-                          compileSdkVersion 36
+          gradle.beforeProject { project ->
+              if (!(project.name in ['file_picker'])) return
+
+              project.plugins.withId('com.android.library') {
+                  project.android {
+                      compileSdkVersion 36
+                  }
+              }
+          }
+
+          subprojects { subproject ->
+              subproject.afterEvaluate {
+                  if (subproject.hasProperty('android')) {
+                      subproject.android {
                           compileOptions {
                               sourceCompatibility JavaVersion.VERSION_17
                               targetCompatibility JavaVersion.VERSION_17
                           }
                       }
                   }
-                  tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-                      kotlinOptions {
-                          jvmTarget = JavaVersion.VERSION_17.toString()
-                      }
-                  }
               }
           }
           EOF
-          fi
 
       - name: Get Dependencies
         run: flutter pub get
