@@ -1,0 +1,53 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Backup your code
+        run: |
+          mkdir temp_backup
+          cp -r lib temp_backup/
+          cp pubspec.yaml temp_backup/
+
+      - name: Generate Android Scaffolding
+        run: flutter create --org org.jobbot --project-name jobbot .
+
+      - name: Restore your code
+        run: |
+          rm -rf lib
+          cp -r temp_backup/lib .
+          cp temp_backup/pubspec.yaml .
+          rm -rf temp_backup
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: jobbot-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
