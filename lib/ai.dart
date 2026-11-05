@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:sqflite/sqflite.dart'; // <-- Added this import
 import 'core.dart';
 
 class AI {
@@ -55,10 +56,13 @@ class AI {
       if (res.statusCode == 200) {
         var data = jsonDecode(jsonDecode(res.body)['choices'][0]['message']['content']);
         for (var result in data['results']) {
-          var job = jobs.firstWhere((j) => j['uid'] == result['uid'], orElse: () => null);
-          if (job != null) {
+          // Fixed the null error here
+          try {
+            var job = jobs.firstWhere((j) => j['uid'] == result['uid']);
             job['matchScore'] = result['fit'];
             job['aiReason'] = result['reason'];
+          } catch (e) {
+            // Job not found, skip it
           }
         }
       }
