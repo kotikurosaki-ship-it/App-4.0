@@ -39,11 +39,17 @@ jobs:
           cp temp_backup/pubspec.yaml .
           rm -rf temp_backup
 
-      # THE FIX: Force the Android project to compile with SDK 36
+      # THE FIX: Safely updates the SDK version regardless of the file format Flutter uses
       - name: Update Android compile SDK
         run: |
-          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' android/app/build.gradle
-          sed -i 's/compileSdkVersion 34/compileSdkVersion 36/' android/app/build.gradle
+          if [ -f android/app/build.gradle.kts ]; then
+            sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' android/app/build.gradle.kts
+            sed -i 's/compileSdk = 34/compileSdk = 36/' android/app/build.gradle.kts
+          fi
+          if [ -f android/app/build.gradle ]; then
+            sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' android/app/build.gradle
+            sed -i 's/compileSdkVersion 34/compileSdkVersion 36/' android/app/build.gradle
+          fi
 
       - name: Get Dependencies
         run: flutter pub get
